@@ -1,0 +1,20 @@
+{
+  "name": "QuotesBot",
+  "version": "1.0.0",
+  "description": "Quotes Bot For Discord",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mistermalm/QuotesBot.git"
+  },
+  "keywords": [],
+  "author": "Jonatan Malm",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mistermalm/QuotesBot/issues"
+  },
+  "homepage": "https://github.com/mistermalm/QuotesBot#readme"
+}
