@@ -1,10 +1,23 @@
 # Work with Python 3.6
 import discord
 import cursewords
+import strikes
 
 TOKEN = 'ODAzOTM0MDIxODk2NzY1NDQw.YBE_5w.CMety3VrlJJJFSrIqWnB4skfgVg'
 
 client = discord.Client()
+
+def strike(id):
+    if id in strikes.strikes:
+        strikes.strikes[id] = strikes.strikes[id] + 1
+    else:
+        strikes.strikes[id] = 1
+
+def check_warning(id):
+    return True if strikes.strikes[id] > 4 else False
+
+async def warn(message):
+    await message.channel.send(f"<@{message.author.id}>, you have been warned. Clean up that dirty mouth of yours!")
 
 @client.event
 async def on_message(message):
@@ -15,7 +28,16 @@ async def on_message(message):
     for word_reply_pair in cursewords.cursewords_and_answers:
         if word_reply_pair[0] in message.content:
             await message.channel.send(word_reply_pair[1])
-            await message.delete() 
+            await message.delete()
+            strike(message.author.id)
+            if check_warning(message.author.id):
+                await warn(message)
+    
+    if message.content.startswith("!strikes"):
+        no_of_strikes = 0
+        if message.author.id in strikes.strikes:
+            no_of_strikes = strikes.strikes[message.author.id]
+        await message.channel.send(f"<@{message.author.id}>, you have {no_of_strikes} strikes.")
 
 @client.event
 async def on_ready():
