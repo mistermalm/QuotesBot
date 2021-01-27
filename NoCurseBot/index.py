@@ -39,6 +39,24 @@ async def on_message(message):
             no_of_strikes = strikes.strikes[message.author.id]
         await message.channel.send(f"<@{message.author.id}>, you have {no_of_strikes} strikes.")
 
+
+    if message.content.startswith("!addCurse"):
+        list = message.content.split()
+        curse = list[1]
+        reply = list[2:]
+        listToStr = ' '.join([str(elem) for elem in reply]) 
+        cursewords.cursewords_and_answers.append((curse, listToStr))
+        await message.channel.send(f"Curse added! Word: {curse}, Reply: {listToStr}.")
+        await message.delete()
+    
+    if message.content.startswith("!listCurses"):
+        entry_string = "**List of Cursewords and Replies**\n"
+        for entry in cursewords.cursewords_and_answers:
+            entry_string = entry_string + "Word: " + entry[0] + ". Reply: " + entry[1] + "\n"
+        await message.channel.send(entry_string)
+        await message.delete()
+            
+
 @client.event
 async def on_ready():
     print('Logged in as')
