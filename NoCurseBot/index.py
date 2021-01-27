@@ -2,6 +2,7 @@
 import discord
 import cursewords
 import strikes
+import supported_inputs
 
 TOKEN = 'ODAzOTM0MDIxODk2NzY1NDQw.YBE_5w.CMety3VrlJJJFSrIqWnB4skfgVg'
 
@@ -12,6 +13,10 @@ def strike(id):
         strikes.strikes[id] = strikes.strikes[id] + 1
     else:
         strikes.strikes[id] = 1
+
+def is_command(string):
+    if string in supported_inputs.supported_inputs:
+        return True
 
 def check_warning(id):
     return True if strikes.strikes[id] > 4 else False
@@ -25,37 +30,37 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    for word_reply_pair in cursewords.cursewords_and_answers:
-        if word_reply_pair[0] in message.content:
-            await message.channel.send(word_reply_pair[1])
+    if is_command(message.content.split()[0]):
+        if message.content.startswith("!strikes"):
+            no_of_strikes = 0
+            if message.author.id in strikes.strikes:
+                no_of_strikes = strikes.strikes[message.author.id]
+            await message.channel.send(f"<@{message.author.id}>, you have {no_of_strikes} strikes.")
             await message.delete()
-            strike(message.author.id)
-            if check_warning(message.author.id):
-                await warn(message)
-    
-    if message.content.startswith("!strikes"):
-        no_of_strikes = 0
-        if message.author.id in strikes.strikes:
-            no_of_strikes = strikes.strikes[message.author.id]
-        await message.channel.send(f"<@{message.author.id}>, you have {no_of_strikes} strikes.")
 
-
-    if message.content.startswith("!addCurse"):
-        list = message.content.split()
-        curse = list[1]
-        reply = list[2:]
-        listToStr = ' '.join([str(elem) for elem in reply]) 
-        cursewords.cursewords_and_answers.append((curse, listToStr))
-        await message.channel.send(f"Curse added! Word: {curse}, Reply: {listToStr}.")
-        await message.delete()
-    
-    if message.content.startswith("!listCurses"):
-        entry_string = "**List of Cursewords and Replies**\n"
-        for entry in cursewords.cursewords_and_answers:
-            entry_string = entry_string + "Word: " + entry[0] + ". Reply: " + entry[1] + "\n"
-        await message.channel.send(entry_string)
-        await message.delete()
-            
+        if message.content.startswith("!addCurse"):
+            list = message.content.split()
+            curse = list[1]
+            reply = list[2:]
+            listToStr = ' '.join([str(elem) for elem in reply]) 
+            cursewords.cursewords_and_answers.append((curse, listToStr))
+            await message.channel.send(f"Curse added! Word: {curse}, Reply: {listToStr}.")
+            await message.delete()
+        
+        if message.content.startswith("!listCurses"):
+            entry_string = "**List of Cursewords and Replies**\n"
+            for entry in cursewords.cursewords_and_answers:
+                entry_string = entry_string + "Word: " + entry[0] + ". Reply: " + entry[1] + "\n"
+            await message.channel.send(entry_string)
+            await message.delete()
+    else:
+        for word_reply_pair in cursewords.cursewords_and_answers:
+            if word_reply_pair[0] in message.content:
+                await message.channel.send(word_reply_pair[1])
+                await message.delete()
+                strike(message.author.id)
+                if check_warning(message.author.id):
+                    await warn(message)
 
 @client.event
 async def on_ready():
