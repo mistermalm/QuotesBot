@@ -1,32 +1,80 @@
 const env = require( 'dotenv' )
 const Discord = require( 'discord.js' )
+const Quotes = require('./Quotes')
 env.config()
 
 const client = new Discord.Client()
-//const guild = new Discord.Guild()
-
 client.on( 'ready', async () => {
   console.log( `Logged in as ${client.user.tag}` )
-  let guild = client.guilds.cache.get( process.env.GUILD_ID )
-  let members = await guild.members.fetch()
-  
-  let patten = members.filter( elem => elem.user.username == "Pstanizewski" )
-
-  let patteMember
-  patten.forEach( p => patteMember = p )
-
-  let kickPatten = new Discord.GuildMember( client, patteMember, guild );
-  // console.log(kickPatten)
-  kickPatten.kick()
-
 })
 
-client.on( 'message', ( msg ) => {
+client.on( 'message', async ( msg ) => {
   if ( msg.author.bot ) return false
   if ( msg.content === 'ping' ) {
     msg.channel.send( 'pong' )
   }
+
+  if ( msg.content.includes('-Quote ') ) {
+    const input = msg.content.split( '-Quote ' )
+
+    // find all numbers in the input using regex.
+    let numbers = new RegExp('[^0-9]');
+    // split up the string by numbers, to get the user id.
+    const inputUserId = input[1].split(numbers).find( elem => elem.length == 18 )
+   
+    if( inputUserId.length == 18 ) {
+      // get the guild
+      let guild = await client.guilds.cache.get( process.env.GUILD_ID )
+
+      // get the quote
+      const theQuote = await doFunction( guild, inputUserId, input[1] )
+
+      // send back the quote to the channel
+      let userData = await getUserById( guild, inputUserId )
+      msg.channel.send( '```' + theQuote + " - " + userData.user.username + '```' )
+    } else {
+      msg.channel.send( 'User was not found' )
+    }
+  }
+
 })
 
-// client.guilds.map((i) => console.log(i))
+async function doFunction( guild, inputUserId, functionName ) {
+  let random = functionName.includes( 'random' )
+  let add = functionName.includes( 'add' )
+
+  if( random) {
+    return await Quotes.get( guild, inputUserId )
+  } else if( add ) {
+
+    let split = functionName.split( " " )
+
+    if( split[0].includes( "add") && split[1].includes( "<@") ) {
+
+      let quoteStr = split.slice(2, split.length).join(' ')
+
+      let quoteAdded = await Quotes.add( guild, userId, quoteStr )
+
+      if( quoteAdded ) {
+        return "Quote was added"
+      } else {
+        return "Something went wrong..."
+      }
+    
+    } else {
+      return "wrong order pal"
+    }
+  }
+
+}
+
+async function getUserById( guild, userId ) {
+
+  let guildMembers = await guild.members.fetch()
+
+  let userData = guildMembers.find(user => user.id == userId );
+  
+  return userData
+}
+
 client.login( process.env.BOT_TOKEN )
