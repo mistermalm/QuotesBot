@@ -2,7 +2,7 @@
 import discord
 import cursewords
 import strikes
-import supported_inputs
+import supported_commands
 
 TOKEN = 'ODAzOTM0MDIxODk2NzY1NDQw.YBE_5w.CMety3VrlJJJFSrIqWnB4skfgVg'
 
@@ -15,7 +15,7 @@ def strike(id):
         strikes.strikes[id] = 1
 
 def is_command(string):
-    if string in supported_inputs.supported_inputs:
+    if string in supported_commands.supported_commands:
         return True
 
 def check_warning(id):
@@ -51,6 +51,13 @@ async def on_message(message):
             entry_string = "**List of Cursewords and Replies**\n"
             for entry in cursewords.cursewords_and_answers:
                 entry_string = entry_string + "Word: " + entry[0] + ". Reply: " + entry[1] + "\n"
+            await message.channel.send(entry_string)
+            await message.delete()
+
+        if message.content.startswith("!commands"):
+            entry_string = "**List of supported commands**\n"
+            for entry in supported_commands.commands_explanations:
+                entry_string = entry_string + entry[0] + ": " + entry[1] + "\n"
             await message.channel.send(entry_string)
             await message.delete()
     else:
